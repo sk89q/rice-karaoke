@@ -178,18 +178,42 @@ RiceKaraokeShow.prototype.reset = function() {
         this._displays[this._displays.length] = null;
         this._displayEngine.getDisplay(i).clear();
     }
-    
+
     this._index = 0;
     this._relativeLastKaraokeLine = 0;
+    this._hasReadyLine = false;
+    this._hasInstrumentalLine = false;
 };
 
 /**
  * Takes in a timing and renders it. This should be called multiple times
  * within the same second.
  * 
+ * "Accurate" mode means that a millisecond back will be rendered for the number
+ * of available displays. This is for use with a scrubber, but it should not
+ * be used during normal play.
+ * 
  * @param {Number} elapsed
+ * @param {Boolean} accurate
  */
-RiceKaraokeShow.prototype.render = function(elapsed) {
+RiceKaraokeShow.prototype.render = function(elapsed, accurate) {
+    if (accurate) {
+        var numDisplays = this._displays.length;
+        for (var i = numDisplays; i > 0; i--) {
+            this.render(elapsed - i / 1000, false);
+        }
+        
+        // Now we need to find an accurate value for _relativeLastKaraokeLine
+        this._relativeLastKaraokeLine = 0;
+        for (var i = 0; i < this._engine.timings.length; i++) {
+            if (this._engine.timings[i].start < elapsed &&
+                this._engine.timings[i].end > this._relativeLastKaraokeLine) {
+                this._relativeLastKaraokeLine = this._engine.timings[i].end;
+                break;
+            }
+        }
+    }
+    
     var freeDisplays = [];
     var displaysToClear = [];
     var unfreedDisplays = {}; 
@@ -271,7 +295,8 @@ RiceKaraokeShow.prototype.render = function(elapsed) {
                 // upcoming line to the karaoke line
                 this._relativeLastKaraokeLine = timing.end;
             // Do an instrumental line
-            } else if (this.showInstrumental && freeDisplays.length == this._displays.length) {
+            } else if (this.showInstrumental && freeDisplays.length == this._displays.length &&
+                       !this._hasInstrumentalLine) {
                 var freeDisplay = freeDisplays.shift();
                 unfreedDisplays[freeDisplay] = true; // Kind of ugly);
                 this._displays[freeDisplay] = new RiceKaraokeInstrumentalLine(
