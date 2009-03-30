@@ -64,7 +64,7 @@ function SimpleKaraokeDisplay(engine, container, displayIndex) {
     
     // Create display
     this._display = jQuery(document.createElement('div'));
-    this._display.attr('id', 'karaoke-display-' + displayIndex);
+    //this._display.attr('id', 'karaoke-display-' + displayIndex);
     this._display.attr('class', 'karaoke-display');
     
     // Will contain the karaoke line / regular text
