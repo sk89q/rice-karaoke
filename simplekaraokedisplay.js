@@ -135,7 +135,7 @@ SimpleKaraokeDisplay.prototype._removeOverlay = function() {
  *
  */
 SimpleKaraokeDisplay.prototype.clear = function() {
-    this._element.text('');
+    this._element.html('&nbsp;');
     this._removeOverlay();
 };
 
