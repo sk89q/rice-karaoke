@@ -1,6 +1,7 @@
 // $Id$
 /*
  * RiceKaraoke JavaScript karaoke engine 
+ * <http://code.google.com/p/ricekaraoke/>
  * Licensed under the GNU General Public License version 3
  * Copyright (c) 2005-2009 sk89q <http://sk89q.therisenrealm.com>
  */
