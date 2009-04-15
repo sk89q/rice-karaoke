@@ -20,12 +20,18 @@
  * 
  * @param {String} containerID
  * @param {Number} numLines
+ * @param {Boolean} rightToLeft Right to left rendering (cannot be changed later)
  */
-function SimpleKaraokeDisplayEngine(containerID, numLines) {
+function SimpleKaraokeDisplayEngine(containerID, numLines, rightToLeft) {
+    // == No user-editable settings below ==
+    
+    this._rightToLeft = rightToLeft;
+    
     var elm = document.getElementById(containerID);
     if (!elm) {
         throw new Exception("Can't find element #" + containerID)
     }
+    
     this._container = jQuery(elm);
     this._displays = [];
     
@@ -67,6 +73,10 @@ function SimpleKaraokeDisplay(engine, container, displayIndex) {
     this._display = jQuery(document.createElement('div'));
     //this._display.attr('id', 'karaoke-display-' + displayIndex);
     this._display.attr('class', 'karaoke-display');
+    if (this._engine._rightToLeft) {
+        this._display.css('direction', 'rtl');
+        this._display.attr('dir', 'rtl');
+    }
     
     // Will contain the karaoke line / regular text
     this._element = jQuery(document.createElement('div'));
@@ -271,7 +281,19 @@ SimpleKaraokeDisplay.prototype.renderKaraoke = function(passed, current, upcomin
     overlay.css('margin-top', '-' + elementHeight + 'px');
     overlay.css('visibility', 'hidden');
     this._display.append(overlay);
-    overlay.css('left', innerElementLeft - overlay.position().left);
+    if (this._engine._rightToLeft) {
+        // The overlay width is less than the width of the entire line, 
+        // so we add this difference to the left coordinate
+        var diff = totalTextWidth - (passedTextWidth +
+            (fragmentPercent / 100 * currentTextWidth));
+        if (diff < 0) {
+            diff = diff / 2; // TODO: Figure out why this is needed
+        }
+        var left = innerElementLeft - overlay.position().left + diff;
+        overlay.css('left', left);
+    } else {
+        overlay.css('left', innerElementLeft - overlay.position().left);
+    }
     overlay.css('visibility', '');
     this._overlay = overlay;
 };
